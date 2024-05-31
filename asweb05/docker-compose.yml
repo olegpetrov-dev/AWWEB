@@ -1,0 +1,102 @@
+version: '3.9'
+
+services:
+  httpd:
+    build:
+      context: ./
+      dockerfile: Dockerfile.httpd
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+    networks:
+      - internal
+    ports:
+      - "80:80"
+    volumes:
+      - "./site/wordpress/:/var/www/html/"
+  php-fpm:
+    build:
+      context: ./
+      dockerfile: Dockerfile.php-fpm
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+    networks:
+      - internal
+    volumes:
+      - "./site/wordpress/:/var/www/html/"
+  mariadb:
+    build: 
+      context: ./
+      dockerfile: Dockerfile.mariadb
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+    networks:
+      - internal
+    environment:
+     MARIADB_DATABASE: sample
+     MARIADB_USER: sampleuser
+     MARIADB_PASSWORD: samplepassword
+     MARIADB_ROOT_PASSWORD: rootpassword
+    volumes:
+      - "./database/:/var/lib/mysql"
+  cron:
+    build:
+      context: ./
+      dockerfile: Dockerfile.cron
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+    environment:
+      USERNAME: PetrovOleg
+      MARIADB_DATABASE: sample
+      MARIADB_USER: sampleuser
+      MARIADB_PASSWORD: samplepassword
+    volumes:
+      - "./backups/:/var/backups/"
+      - "./site/wordpress/:/var/www/html/"
+    networks:
+      - internal
+networks:
+  internal: {}

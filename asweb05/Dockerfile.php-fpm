@@ -1,0 +1,10 @@
+FROM php:8.1-fpm
+
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+		libfreetype6-dev \
+		libjpeg62-turbo-dev \
+		libpng-dev \
+		&& rm -rf /var/lib/apt/lists/*
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+	&& docker-php-ext-configure pdo_mysql \
+	&& docker-php-ext-install -j$(nproc) gd mysqli
